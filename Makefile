@@ -6,9 +6,9 @@ build:
 install: build
 	pip install .
 uninstall:
-	pip uninstall virtual_vehicle
+	pip uninstall docKar
 
 clean:
-	rm -fdr build dist virtual_vehicle.egg-info
+	rm -fdr build dist docKar.egg-info
 
 .PHONY: all build install uninstall clean

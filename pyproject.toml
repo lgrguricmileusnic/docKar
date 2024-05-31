@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "virtual-vehicle"
+name = "docKar"
 version = "0.0.1"
 authors = [
     {name = "Lovro Grgurić Mileusnić", email = "lovrogm@gmail.com"}
@@ -12,4 +12,4 @@ requires-python = ">=3.9"
 
 
 [project.scripts]
-vehicle-gen = "virtual_vehicle.generate:main"
+dockar = "docKar.generate:main"
