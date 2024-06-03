@@ -1,0 +1,6 @@
+[submodule "ecus/ic-tui"]
+	path = ecus/ic-tui
+	url = https://github.com/lgrguricmileusnic/ic-tui.git
+[submodule "ecus/ecu-template"]
+	path = ecus/ecu-template
+	url = https://github.com/lgrguricmileusnic/ecu-template.git
