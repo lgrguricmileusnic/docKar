@@ -51,7 +51,17 @@ class Compose:
 
     def add_network(self, network: Network):
         self._content[Compose._NETWORKS][network.name] = network._content
-    
+    def get_networks(self):
+        return self._content[Compose._NETWORKS]
+    def network_exists(self, name: str):
+        networks = self._content[Compose._NETWORKS].keys()
+        if len() <= 0:
+            return False
+        
+        return name in networks
+        
+        
+
     def save_to_file(self):
         with open(self.path, "w") as f:
             yaml.dump(self._content, f)

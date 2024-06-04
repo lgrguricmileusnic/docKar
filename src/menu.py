@@ -2,6 +2,9 @@ import compose as cmp
 import os
 from .util import get_yn, get_choice, get_str
 
+networks = []
+
+
 def print_menu_header(path: str):
     print(f"""
     Code, Dockerfiles and compose.yml will be stored in:
@@ -12,35 +15,34 @@ def print_choices():
     print(r"""
     1) Add CAN bus
     2) Add ECU
-    3) Add instrument cluster TUI to an ECU
     """)
 
 
-def configure_net_driver():
-    driver = "lovrogm/dockercan:latest"
-    use_default_driver = get_yn(f"Use default CAN docker network driver ({driver}) [y/n]")
+def create_network(name: str):
+    default_driver = "lovrogm/dockercan:latest"
 
-    if not use_default_driver:
+    if get_yn(f"Use default CAN docker network driver ({default_driver})"):
         driver = get_str("Enter custom driver name: ")
-        return
+        network = cmp.Network(name, driver=driver)
+        return network
 
-    # dockercan options
-    # TODO print dockercan options header
-    create_host_if = get_yn("[dockercan] Create host virtual CAN interface for this bus? [y/n]")
-    if create_host_if:
+    network = cmp.Network(name, driver=default_driver)
+
+
+    opts = {}
+    if get_yn("[dockercan] Connect host to this bus over vcan interface?"):
         if_name = get_str("Enter interface name: ")
-        # TODO finish
-
-    # TODO centralised, CAN FD
-    centralised = get_yn()
+        opts["host_if"] = if_name
+    
+    if get_yn("[dockercan] Use CAN FD?"):
+        opts["canfd"] = "true"
+    if len(opts.keys()) > 0:
+        network.add_driver_opts(opts)
 
 def choice_add_can_bus(compose: cmp.Compose):
     name = get_str("Enter bus name: ")
-
-
-
-    network = cmp.Network(name, driver=driver)
-    compose.add_network(network)
+    net = create_network(name)
+    compose.add_network(net)
 
 
 def choice_add_ecu(compose: cmp.Compose):
