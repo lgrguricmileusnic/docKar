@@ -1,21 +1,20 @@
-import yaml
-
-banner = r"""
+from src.args import parse_args
+from src.menu import menu
+def print_banner():
+    print(r"""
    ___  ____  _______ _____   ___ 
   / _ \/ __ \/ ___/ //_/ _ | / _ \
  / // / /_/ / /__/ ,< / __ |/ , _/
 /____/\____/\___/_/|_/_/ |_/_/|_| 
-"""
+    
+    A script for creating Docker Compose based ECU networks.
+    """)
 
-compose = {"services": {}, "networks": {}}
 
 def main():
-    print(banner)
-    compose["services"]["serv1"] = None
-    compose["services"]["serv2"] = None
-    compose["networks"]["net1"] = None
-    compose["networks"]["net2"] = None
-    with open("compose.yml", "w") as f:
-        yaml.dump(compose, f, )
+    parse_args()
+    print_banner()
+    menu()
 
-main()
+if __name__ == "__main__":
+    main()
