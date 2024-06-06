@@ -14,39 +14,40 @@ def print_menu_header(path: str):
     {path}
     """)
 
-# def print_layout():
-#     global buses
+def print_layout():
+    global buses
 
-#     if len(buses) == 0:
-#         return
+    if len(buses) == 0:
+        return
     
-#     print("=== NETWORK LAYOUT ===")
-#     w = 15
-#     for bus in buses:
-#         print("{name:{w}}".format(name=bus.name, w=w), end=" ")
-#     print()
+    print("\n ========= NETWORK LAYOUT =========")
+    w = 15
+    for bus in buses:
+        print("{name:{w}}".format(name=bus.name, w=w), end=" ")
+    print()
 
-#     for _ in range(len(buses)):
-#         print("{divider:{w}}".format(divider='│', w=w), end=" ")
-#     print()
+    for _ in range(len(buses)):
+        print("{divider:{w}}".format(divider='│', w=w), end=" ")
+    print()
     
-#     max_ecus = 0
-#     for bus in buses:
-#         max_ecus = max(max_ecus, len(bus.ecus))
+    max_ecus = 0
+    for bus in buses:
+        max_ecus = max(max_ecus, len(bus.ecus))
 
-#     for i in range(max_ecus):
-#         for bus in buses:
-#             try:
-#                 ecu = bus.ecus[i]
-#                 if ecu.name == None:
-#                     continue
-#                 print("{name:{w}}".format(name='├ '+ ecu.name, w=w), end=" ")
-#             except IndexError:
-#                 continue
-#         print()
-#         for _ in range(len(buses)):
-#             print("{divider:{w}}".format(divider='│', w=w), end=" ")
-#     print("\n\n", end="")
+    for i in range(max_ecus):
+        for bus in buses:
+            try:
+                ecu = bus.ecus[i]
+                print("{name:{w}}".format(name='├ '+ ecu.name, w=w), end=" ")
+            except IndexError:
+                print("{divider:{w}}".format(divider='│', w=w), end=" ")
+
+        print()
+        for _ in range(len(buses)):
+            print("{divider:{w}}".format(divider='│', w=w), end=" ")
+        print()
+    print("\n ========= NETWORK LAYOUT ========= \n")
+    # print("\n\n", end="")
         
 
 
@@ -84,10 +85,10 @@ def create_bus():
     bus = CANBus(name=name,canfd=canfd, host_if=if_name)
 
     if get_yn("Add random CAN frame generation to this bus?"):
-        bus.add_ecu(ECU(None, ECUType.cangen, False))
+        bus.add_ecu(ECU("noise_gen", ECUType.cangen, False))
 
     if get_yn("Attach cannelloni container?"):
-        bus.add_ecu(ECU(None, ECUType.cannelloni, False))
+        bus.add_ecu(ECU("cannelloni", ECUType.cannelloni, False))
 
     return bus
 
@@ -124,9 +125,9 @@ def choice_add_ecu():
     while True:
         try:
             print_question()
-            selected_buses = [buses[int(num - 1)] for num in get_str("Enter choice: ").split(",")]
+            selected_buses = [buses[int(num) - 1] for num in get_str("Enter choice: ").split(",")]
             break
-        except Exception:
+        except Exception as e:
             pass
     for bus in selected_buses:
         bus.add_ecu(ecu)
@@ -151,6 +152,7 @@ def menu(out_dir: str):
     global path
     path = out_dir
     while True:
+        print_layout()
         print_choices()
         choice = get_choice([
             choice_add_can_bus,
