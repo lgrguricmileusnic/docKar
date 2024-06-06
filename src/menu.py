@@ -1,8 +1,11 @@
-import compose as cmp
 import os
+from .car import CANBus, ECU, ECUType
 from .util import get_yn, get_choice, get_str
+from .compose import create_compose
 
-networks = []
+
+buses = []
+path = None
 
 
 def print_menu_header(path: str):
@@ -11,56 +14,148 @@ def print_menu_header(path: str):
     {path}
     """)
 
+# def print_layout():
+#     global buses
+
+#     if len(buses) == 0:
+#         return
+    
+#     print("=== NETWORK LAYOUT ===")
+#     w = 15
+#     for bus in buses:
+#         print("{name:{w}}".format(name=bus.name, w=w), end=" ")
+#     print()
+
+#     for _ in range(len(buses)):
+#         print("{divider:{w}}".format(divider='│', w=w), end=" ")
+#     print()
+    
+#     max_ecus = 0
+#     for bus in buses:
+#         max_ecus = max(max_ecus, len(bus.ecus))
+
+#     for i in range(max_ecus):
+#         for bus in buses:
+#             try:
+#                 ecu = bus.ecus[i]
+#                 if ecu.name == None:
+#                     continue
+#                 print("{name:{w}}".format(name='├ '+ ecu.name, w=w), end=" ")
+#             except IndexError:
+#                 continue
+#         print()
+#         for _ in range(len(buses)):
+#             print("{divider:{w}}".format(divider='│', w=w), end=" ")
+#     print("\n\n", end="")
+        
+
+
+
+
 def print_choices():
     print(r"""
+    Select option:
+
     1) Add CAN bus
     2) Add ECU
+    3) Done
+    4) Exit
     """)
 
+def print_bus_choices():
+    s = ""
+    i = 1
+    for bus in buses:
+        s += f"""{i}) {bus.name}\n """
+        i += 1
+    print(s)
 
-def create_network(name: str):
-    default_driver = "lovrogm/dockercan:latest"
+def create_bus():
+    name = get_str("Enter bus name: ")
 
-    if get_yn(f"Use default CAN docker network driver ({default_driver})"):
-        driver = get_str("Enter custom driver name: ")
-        network = cmp.Network(name, driver=driver)
-        return network
-
-    network = cmp.Network(name, driver=default_driver)
-
-
-    opts = {}
+    if_name = None
     if get_yn("[dockercan] Connect host to this bus over vcan interface?"):
         if_name = get_str("Enter interface name: ")
-        opts["host_if"] = if_name
     
+    canfd = False
     if get_yn("[dockercan] Use CAN FD?"):
-        opts["canfd"] = "true"
-    if len(opts.keys()) > 0:
-        network.add_driver_opts(opts)
+        canfd = True
 
-def choice_add_can_bus(compose: cmp.Compose):
-    name = get_str("Enter bus name: ")
-    net = create_network(name)
-    compose.add_network(net)
+    bus = CANBus(name=name,canfd=canfd, host_if=if_name)
+
+    if get_yn("Add random CAN frame generation to this bus?"):
+        bus.add_ecu(ECU(None, ECUType.cangen, False))
+
+    if get_yn("Attach cannelloni container?"):
+        bus.add_ecu(ECU(None, ECUType.cannelloni, False))
+
+    return bus
 
 
-def choice_add_ecu(compose: cmp.Compose):
-    pass
+def create_ecu():
+    name = get_str("Enter ECU name:")
+    if get_yn("Use ECU template?"):
+        ecu_type = ECUType.ecu_template
+    else:
+        ecu_type = ECUType.custom
 
-def choice_add_ic_tui(compose: cmp.Compose):
-    pass
-def menu(path: str):
-    compose = cmp.Compose(os.path.join(path), "compose.yml")
+    ic = get_yn("Connect ECU to IC-TUI?")
 
-    print_choices()
-    choice = get_choice()
+    return ECU(name=name, type=ecu_type, ic=ic)
 
-    if choice == 1:
-        choice_add_can_bus()
-    elif choice == 2:
-        choice_add_ecu()
-    elif choice == 3:
-        choice_add_ic_tui()
+
+def choice_add_can_bus():
+    global buses
+    buses.append(create_bus())
+
+
+def choice_add_ecu():
+    global buses
+
+    def print_question():
+        print("Connect ECU to which buses? (e.g. 1,3)")
+        print_bus_choices()
     
-    compose.save_to_file()
+    if len(buses) <= 0:
+        print("Add a CAN bus first.")
+        return
+    ecu = create_ecu()
+
+    while True:
+        try:
+            print_question()
+            selected_buses = [buses[int(num - 1)] for num in get_str("Enter choice: ").split(",")]
+            break
+        except Exception:
+            pass
+    for bus in selected_buses:
+        bus.add_ecu(ecu)
+    
+def choice_done():
+    global path, buses
+    compose_path = os.path.join(path, "compose.yml")
+    
+    
+    
+    with open(compose_path, "w") as f:
+        yaml.dump(create_compose(buses=buses), f)
+    
+
+
+
+
+    # TODO copy templates
+
+
+def menu(out_dir: str):
+    global path
+    path = out_dir
+    while True:
+        print_choices()
+        choice = get_choice([
+            choice_add_can_bus,
+            choice_add_ecu,
+            choice_done,
+            exit
+        ])
+        choice()

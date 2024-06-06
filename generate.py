@@ -5,16 +5,14 @@ def print_banner():
    ___  ____  _______ _____   ___ 
   / _ \/ __ \/ ___/ //_/ _ | / _ \
  / // / /_/ / /__/ ,< / __ |/ , _/
-/____/\____/\___/_/|_/_/ |_/_/|_| 
-    
-    A script for creating Docker Compose based ECU networks.
+/____/\____/\___/_/|_/_/ |_/_/|_|     
     """)
 
 
 def main():
-    parse_args()
+    args = parse_args()
     print_banner()
-    menu()
+    menu(args.out_dir)
 
 if __name__ == "__main__":
     main()
