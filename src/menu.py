@@ -1,7 +1,7 @@
 import os
 from .car import CANBus, ECU, ECUType
 from .util import get_yn, get_choice, get_str
-from .compose import create_compose
+from .compose import create_project
 
 
 buses = []
@@ -67,7 +67,7 @@ def print_bus_choices():
     s = ""
     i = 1
     for bus in buses:
-        s += f"""{i}) {bus.name}\n """
+        s += f""" {i}) {bus.name}\n"""
         i += 1
     print(s)
 
@@ -76,7 +76,7 @@ def create_bus():
 
     if_name = None
     if get_yn("[dockercan] Connect host to this bus over vcan interface?"):
-        if_name = get_str("Enter interface name: ")
+        if_name = get_str("Enter interface name:")
     
     canfd = False
     if get_yn("[dockercan] Use CAN FD?"):
@@ -127,25 +127,16 @@ def choice_add_ecu():
             print_question()
             selected_buses = [buses[int(num) - 1] for num in get_str("Enter choice: ").split(",")]
             break
-        except Exception as e:
+        except Exception:
             pass
     for bus in selected_buses:
         bus.add_ecu(ecu)
     
 def choice_done():
     global path, buses
-    compose_path = os.path.join(path, "compose.yml")
-    
-    
-    
-    with open(compose_path, "w") as f:
-        yaml.dump(create_compose(buses=buses), f)
-    
+    create_project(path, buses)
+    exit()
 
-
-
-
-    # TODO copy templates
 
 
 def menu(out_dir: str):

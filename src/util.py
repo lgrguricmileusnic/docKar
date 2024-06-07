@@ -25,7 +25,7 @@ def get_choice(choices: list):
 
 def get_str(prompt: str, min_len=1) -> str:
     while True:
-        s = input(prompt)
+        s = input(prompt + " ")
         s = re.sub("\s+", "", s)
         if len(s) >= min_len:
             return s
