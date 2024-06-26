@@ -53,7 +53,7 @@ def create_project(path: str, buses: list[CANBus]) -> dict:
                 content[_SERVICES][f"cannelloni{cnl_count}"] = {
                     "build" : "./cannelloni",
                     "networks" : [bus.name],
-                    "ports" : f"{20000 + cnl_count}:20000"
+                    "ports" : [f"{20000 + cnl_count}:20000"]
                 }
                 cnl_count += 1
             
